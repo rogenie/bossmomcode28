@@ -1,0 +1,5 @@
+[build]
+buildCommand = "bash build.sh"
+
+[deploy]
+startCommand = "python scheduler.py"

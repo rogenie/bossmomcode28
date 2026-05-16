@@ -1,0 +1,10 @@
+anthropic
+pillow
+numpy
+requests
+beautifulsoup4
+boto3
+apscheduler
+google-auth
+google-auth-httplib2
+google-api-python-client
