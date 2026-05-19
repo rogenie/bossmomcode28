@@ -22,6 +22,7 @@ except ImportError:
 import config as cfg
 from slide_generator import generate_copy, render_slide, TOPIC_QUEUE, OUTPUT_DIR
 from poster import post_to_all_platforms
+from notifier import notify_success, notify_failure, notify_skip
 
 logging.basicConfig(
     level=logging.INFO,
@@ -179,6 +180,14 @@ def run_pipeline(topic_override=None, pillar_override=None):
             post_id = (result.get("id") or result.get("publish_id") or result.get("video_id") or "")
             db_update_post(run_id, platform, "posted", post_id=str(post_id))
             log.info(f"  ✓ {platform}")
+            notify_success(
+                account     = cfg.ACCOUNT_HANDLE,
+                post_id     = str(post_id),
+                caption     = caption,
+                image_url   = str(slide_paths[0]) if slide_paths else "",
+                retry_count = 0,
+                platform    = platform,
+            )
             try:
                 from sheets_logger import log_post
                 log_post(account="@bossmomcode28", niche="Single Mom Empowerment", topic=topic,
@@ -189,6 +198,13 @@ def run_pipeline(topic_override=None, pillar_override=None):
         else:
             db_update_post(run_id, platform, "failed", error=result.get("error", ""))
             log.error(f"  ✗ {platform}: {result.get('error')}")
+            notify_failure(
+                account     = cfg.ACCOUNT_HANDLE,
+                error       = Exception(result.get("error", "Unknown error")),
+                platform    = platform,
+                retry_count = 0,
+                context     = "media_publish API call",
+            )
             try:
                 from sheets_logger import log_post
                 log_post(account="@bossmomcode28", niche="Single Mom Empowerment", topic=topic,
@@ -209,6 +225,12 @@ def safe_pipeline(**kwargs):
         run_pipeline(**kwargs)
     except Exception as e:
         log.error(f"Pipeline error: {e}", exc_info=True)
+        notify_failure(
+            account  = cfg.ACCOUNT_HANDLE,
+            error    = e,
+            platform = "pipeline",
+            context  = "pipeline execution — crashed before posting",
+        )
 
 def start_scheduler():
     init_db()
