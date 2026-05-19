@@ -27,7 +27,7 @@ POST_PLATFORMS = [p.strip() for p in _platforms_env.split(",")]
 
 ACCOUNT_HANDLE   = "@bossmomcode28"
 NICHE            = "Single Mom Empowerment"
-SLIDE_W, SLIDE_H = 1080, 1350
+SLIDE_W, SLIDE_H = 1080, 1080
 
 BASE_DIR    = Path(__file__).parent
 SLIDES_DIR  = BASE_DIR / "slides_output"
